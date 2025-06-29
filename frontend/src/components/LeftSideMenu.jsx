@@ -30,6 +30,9 @@ function SideMenu({user}) {
       <NavButton icon={<HiOutlineEnvelope size={28} />} context="ข้อความ" />
       <NavButton icon={<FaRegUser size={28} />} context="ข้อมูลส่วนตัว" />
       <NavButton icon={<MdMoreHoriz size={28} />} context="เพิ่มเติม" />
+      <div className="bg-white font-[600] text-[16px] text-center  p-[15px] mr-[20px] mt-[10px] hover:bg-gray-200 rounded-[70px] gap-[20px] cursor-default">โพสต์</div>
+
+
     </div>
   );
 }
