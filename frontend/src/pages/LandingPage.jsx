@@ -1,21 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 
 import AuthForm from "../components/Auth/AuthForm";
-import { useRef, useState } from "react";
 
-function LandingPage({ openForm }) {
-  let isSignup = useRef(false);
-  let isSignin = useRef(false);
-
-  const signup = () => {
-    isSignin.current = false;
-    isSignup.current = true;
-  };
-
-  const signin = () => {
-    isSignup.current = false;
-    isSignin.current = true;
-  };
+function LandingPage({ openForm, formType }) {
   return (
     <div>
       <div
@@ -119,10 +106,7 @@ function LandingPage({ openForm }) {
               <div className="flex-grow border-t border-gray-600"></div>
             </div>
             <Link to="/signup">
-              <button
-                onClick={signup}
-                className="w-75 h-10 rounded-4xl flex items-center justify-center bg-blue-400 hover:bg-blue-500 text-base font-sans font-semibold text-white cursor-pointer"
-              >
+              <button className="w-75 h-10 rounded-4xl flex items-center justify-center bg-blue-400 hover:bg-blue-500 text-base font-sans font-semibold text-white cursor-pointer">
                 Create account
               </button>
             </Link>
@@ -154,17 +138,14 @@ function LandingPage({ openForm }) {
 
           {/* Sign in button */}
           <Link to="/login">
-            <button
-              onClick={signin}
-              className="w-75 h-10 rounded-4xl  mt-4 border-1 border-gray-500 text-base font-semibold text-blue-400 cursor-pointer"
-            >
+            <button className="w-75 h-10 rounded-4xl  mt-4 border-1 border-gray-500 text-base font-semibold text-blue-400 cursor-pointer">
               Sign in
             </button>
           </Link>
         </div>
-        {openForm && (isSignup || isSignin) && (
+        {openForm && (
           <div className="absolute">
-            <AuthForm formType={isSignup.current ? "signup" : "signin"} />
+            <AuthForm formType={formType} />
           </div>
         )}
       </div>

@@ -6,8 +6,14 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LandingPage openForm={true} />} />
-        <Route path="/signup" element={<LandingPage openForm={true} />} />
+        <Route
+          path="/login"
+          element={<LandingPage openForm={true} formType="signin" />}
+        />
+        <Route
+          path="/signup"
+          element={<LandingPage openForm={true} formType="signup" />}
+        />
         <Route path="/home" element={<HomePage />} />
       </Routes>
     </Router>

@@ -151,9 +151,11 @@ function SigninForm() {
             <div className="mt-9">
               <h1 className="text-gray-500">
                 Don't have an account?
-                <span className="text-blue-500 hover:underline cursor-pointer pl-1">
-                  Sign up
-                </span>
+                <Link to="/signup">
+                  <span className="text-blue-500 hover:underline cursor-pointer pl-1">
+                    Sign up
+                  </span>
+                </Link>
               </h1>
             </div>
           </div>
