@@ -22,10 +22,13 @@ function SigninForm() {
       email: !usernameIsEmail ? null : username,
       password: password,
     };
-    
-    const isUserLogin = await userLogin(API_URL, user);
-    if (isUserLogin) {
-      navigator("/home");
+    try {
+      const isUserLogin = await userLogin(API_URL, user);
+      if (isUserLogin) {
+        navigator("/home");
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
   return (
