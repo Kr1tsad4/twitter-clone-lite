@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { userLogin } from "../../libs/fetchUserUtils";
 import { API_URL } from "../../libs/api";
@@ -13,8 +13,16 @@ function SigninForm() {
     setIsUsernameFilled((prev) => !prev);
   };
 
+  const usernameIsEmail = useMemo(() => {
+    return username.includes("@") && username.includes(".");
+  });
   const login = async () => {
-    const user = { name: username, email: username, password: password };
+    const user = {
+      name: usernameIsEmail ? null : username,
+      email: !usernameIsEmail ? null : username,
+      password: password,
+    };
+    
     const isUserLogin = await userLogin(API_URL, user);
     if (isUserLogin) {
       navigator("/home");

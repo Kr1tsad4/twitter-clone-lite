@@ -1,7 +1,13 @@
+import LeftSideMenu from "../components/LeftSideMenu";
+import MainPost from "../components/MainPost";
+import RightSideMenu from "../components/RightSideMenu";
+
 function HomePage() {
   return (
-    <div>
-      <h1 className="text-red-500">Home</h1>
+    <div className="min-h-screen bg-black flex">
+      <LeftSideMenu />
+      <MainPost />
+      <RightSideMenu />
     </div>
   );
 }
