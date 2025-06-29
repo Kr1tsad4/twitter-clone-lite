@@ -1,12 +1,85 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { API_URL } from "../../libs/api";
+import { createUser, userLogin } from "../../libs/fetchUserUtils";
+
 function SignupForm() {
+  const navigator = useNavigate();
   const [isCreatingPassword, setIsCreatingPassword] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedDay, setSelectedDay] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 125 }, (_, i) => currentYear - i);
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+
+  const getDob = useMemo(() => {
+    if (!selectedYear || !selectedMonth || !selectedDay) return "";
+    return `${selectedYear}-${selectedMonth}-${selectedDay}`;
+  });
 
   const handleCreatePasswordPage = () => {
     setIsCreatingPassword((prev) => !prev);
   };
+  const newUser = useMemo(() => {
+    return {
+      name: name,
+      email: email,
+      dob: getDob,
+      password,
+    };
+  }, [name, email, getDob, password]);
 
+  const [enableSignupButton, setEnableSignupButton] = useState(false);
+  const [enableNextButton, setEnableNextButton] = useState(false);
+  useEffect(() => {
+    if (password && confirmPassword) {
+      setEnableSignupButton(password === confirmPassword);
+    }
+  }, [password, confirmPassword]);
+
+  useEffect(() => {
+    const isFormFilled =
+      !!name && !!email && !!selectedDay && !!selectedMonth && !!selectedYear;
+    setEnableNextButton(isFormFilled);
+  }, [name, email, selectedDay, selectedMonth, selectedYear]);
+
+  const createAccount = async () => {
+    try {
+      const newAccount = await createUser(API_URL, newUser);
+      if (newAccount) {
+        const user = {
+          email: email,
+          password: password,
+        };
+        const loginUser = await userLogin(API_URL, user);
+        if (loginUser) {
+          navigator("/home");
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="text-white">
       {!isCreatingPassword && (
@@ -48,11 +121,15 @@ function SignupForm() {
               type="text"
               placeholder="Name"
               className="pl-2 w-[450px] border-2 border-[rgba(77,86,96,0.4)] h-16 mt-7 rounded-md outline-0 focus:border-blue-500"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
             <input
               type="text"
               placeholder="Email"
               className="pl-2 w-[450px] border-2 border-[rgba(77,86,96,0.4)] h-16 mt-7 rounded-md outline-0 focus:border-blue-500"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div class="mt-9 w-[450px]">
@@ -68,37 +145,73 @@ function SignupForm() {
               <select
                 name="month"
                 className="w-[220px] border-2 border-[rgba(77,86,96,0.4)] h-14 mt-7 rounded-md outline-0 focus:border-blue-500 pl-2"
+                onChange={(e) => setSelectedMonth(e.target.value)}
               >
                 <option disabled selected value="">
-                  Month
+                  {selectedMonth ? months[selectedMonth - 1] : "Month"}
                 </option>
+                {months.map((month, index) => (
+                  <option
+                    key={index}
+                    value={index + 1}
+                    className="bg-black text-white"
+                  >
+                    {month}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
               <select
                 name="day"
                 className="w-[100px] border-2 border-[rgba(77,86,96,0.4)] h-14 mt-7 rounded-md outline-0 focus:border-blue-500 pl-2"
+                onChange={(e) => setSelectedDay(e.target.value)}
               >
                 <option disabled selected value="">
-                  Day
+                  {selectedDay ? selectedDay : "Day"}
                 </option>
+                {days.map((day, index) => (
+                  <option
+                    key={index}
+                    value={day}
+                    className="bg-black text-white"
+                  >
+                    {day}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
               <select
                 name="year"
                 className="border-2 border-[rgba(77,86,96,0.4)] h-14 mt-7 rounded-md outline-0 focus:border-blue-500 w-[130px] pl-2"
+                onChange={(e) => setSelectedYear(e.target.value)}
               >
                 <option disabled selected value="">
-                  Year
+                  {selectedYear ? selectedYear : "Year"}
                 </option>
+                {years.map((year, index) => (
+                  <option
+                    key={index}
+                    value={year}
+                    className="bg-black text-white"
+                  >
+                    {year}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
           <button
             onClick={handleCreatePasswordPage}
-            className="mt-20 w-[450px] h-13 rounded-4xl flex items-center justify-center text-black font-bold bg-white cursor-pointer"
+            className={`mt-20 w-[450px] h-13 rounded-4xl flex items-center justify-center text-black font-bold 
+                ${
+                  enableNextButton
+                    ? "bg-white text-black cursor-pointer"
+                    : "bg-[rgba(241,243,245,0.4)] text-black"
+                }`}
+            disabled={!enableNextButton}
           >
             Next
           </button>
@@ -113,15 +226,28 @@ function SignupForm() {
             <input
               type="password"
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="pl-2 w-[450px] border-2 border-[rgba(77,86,96,0.4)] h-16 mt-7 rounded-md outline-0 focus:border-blue-500"
             />
             <input
               type="password"
               placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="pl-2 w-[450px] border-2 border-[rgba(77,86,96,0.4)] h-16 mt-7 rounded-md outline-0 focus:border-blue-500"
             />
 
-            <button className="mt-20 w-[450px] h-13 rounded-4xl flex items-center justify-center text-black font-bold bg-white cursor-pointer">
+            <button
+              onClick={createAccount}
+              disabled={!enableSignupButton}
+              className={`mt-20 w-[450px] h-13 rounded-4xl flex items-center justify-center font-bold 
+                ${
+                  enableSignupButton
+                    ? "bg-white text-black cursor-pointer"
+                    : "bg-[rgba(241,243,245,0.4)] text-black"
+                }`}
+            >
               Sign up
             </button>
           </div>
