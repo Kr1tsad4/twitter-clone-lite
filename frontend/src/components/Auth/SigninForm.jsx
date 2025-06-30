@@ -8,7 +8,8 @@ function SigninForm() {
   const [isUsernameFilled, setIsUsernameFilled] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
+  const [isUsernameOrPasswordIncorrect, setIsUsernameOrPasswordIncorrect] =
+    useState(false);
   const handleUsernameFilled = () => {
     setIsUsernameFilled((prev) => !prev);
   };
@@ -16,6 +17,11 @@ function SigninForm() {
   const usernameIsEmail = useMemo(() => {
     return username.includes("@") && username.includes(".");
   });
+
+  const saveUserSession = (user) => {
+    sessionStorage.setItem("currentUser", JSON.stringify(user));
+  };
+
   const login = async () => {
     const user = {
       name: usernameIsEmail ? null : username,
@@ -25,10 +31,11 @@ function SigninForm() {
     try {
       const isUserLogin = await userLogin(API_URL, user);
       if (isUserLogin) {
+        saveUserSession(isUserLogin.user);
         navigator("/home");
       }
     } catch (error) {
-      console.log(error);
+      setIsUsernameOrPasswordIncorrect(true);
     }
   };
   return (
@@ -175,7 +182,7 @@ function SigninForm() {
 
       {/* password page */}
       {isUsernameFilled && (
-        <div class="mt-3 ml-20">
+        <div className="mt-3 ml-20">
           <p className="font-bold text-[28px]">Enter your password</p>
           <div>
             <div className="flex flex-col">
@@ -195,6 +202,11 @@ function SigninForm() {
               placeholder="Password"
               className="h-15 pl-2 w-[450px] border border-[rgba(178,185,193,0.4)] rounded-sm mt-7 outline-0 focus:border-blue-500"
             />
+            {isUsernameOrPasswordIncorrect && (
+              <p className="text-red-500 text-[12px] pt-1 pl-3 ">
+                Username or password is incorrect.
+              </p>
+            )}
             <h1 className="text-[12px] text-blue-500 p-2 cursor-pointer hover:underline">
               Forgot password?
             </h1>

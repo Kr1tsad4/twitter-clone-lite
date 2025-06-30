@@ -57,7 +57,6 @@ function SignupForm() {
       const users = await getUser(API_URL);
       if (users) {
         usedEmail.current = users.map((u) => u.email);
-        console.log(usedEmail.current);
       }
     };
 
@@ -77,7 +76,7 @@ function SignupForm() {
   };
   const handleOnBlur = (field, value) => {
     if (field === "name") {
-      setRequiredNameWarning(!value.trim());
+      setRequiredNameWarning(!value);
     }
 
     if (field === "email") {
@@ -144,7 +143,9 @@ function SignupForm() {
     selectedMonth,
     selectedYear,
   ]);
-
+  const saveUserSession = (user) => {
+    sessionStorage.setItem("currentUser", JSON.stringify(user));
+  };
   const createAccount = async () => {
     try {
       const newAccount = await createUser(API_URL, newUser);
@@ -155,6 +156,7 @@ function SignupForm() {
         };
         const loginUser = await userLogin(API_URL, user);
         if (loginUser) {
+          saveUserSession(loginUser.user);
           navigator("/home");
         }
       }
@@ -209,7 +211,7 @@ function SignupForm() {
               } `}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onBlur={() => handleOnBlur("name")}
+              onBlur={(e) => handleOnBlur("name", e.target.value)}
               onInput={(e) => handleOnInput("name", e.target.value)}
             />
             {requiredNameWarning && (
@@ -255,9 +257,10 @@ function SignupForm() {
                 name="month"
                 className="w-[220px] border-2 border-[rgba(77,86,96,0.4)] h-14 mt-7 rounded-md outline-0 focus:border-blue-500 pl-2"
                 onChange={(e) => setSelectedMonth(e.target.value)}
+                value={selectedMonth}
               >
                 <option disabled value="">
-                  {selectedMonth ? months[selectedMonth - 1] : "Month"}
+                  Month
                 </option>
                 {months.map((month, index) => (
                   <option
@@ -275,9 +278,10 @@ function SignupForm() {
                 name="day"
                 className="w-[100px] border-2 border-[rgba(77,86,96,0.4)] h-14 mt-7 rounded-md outline-0 focus:border-blue-500 pl-2"
                 onChange={(e) => setSelectedDay(e.target.value)}
+                value={selectedDay}
               >
                 <option disabled value="">
-                  {selectedDay ? selectedDay : "Day"}
+                  Day
                 </option>
                 {days.map((day, index) => (
                   <option
@@ -295,9 +299,10 @@ function SignupForm() {
                 name="year"
                 className="border-2 border-[rgba(77,86,96,0.4)] h-14 mt-7 rounded-md outline-0 focus:border-blue-500 w-[130px] pl-2"
                 onChange={(e) => setSelectedYear(e.target.value)}
+                value={selectedYear}
               >
                 <option disabled value="">
-                  {selectedYear ? selectedYear : "Year"}
+                  Year
                 </option>
                 {years.map((year, index) => (
                   <option
