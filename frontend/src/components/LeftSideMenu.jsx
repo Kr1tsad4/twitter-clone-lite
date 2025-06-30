@@ -6,7 +6,7 @@ import { HiOutlineEnvelope } from "react-icons/hi2";
 import { FaRegUser } from "react-icons/fa";
 import { MdMoreHoriz } from "react-icons/md";
 
-function SideMenu() {
+function SideMenu({user}) {
   const x_logo = (
     <svg
       aria-label="X logo"

@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { API_URL } from "../../libs/api";
-import { createUser, userLogin } from "../../libs/fetchUserUtils";
+import { createUser, getUser, userLogin } from "../../libs/fetchUserUtils";
 
 function SignupForm() {
   const navigator = useNavigate();
@@ -35,11 +35,12 @@ function SignupForm() {
   const getDob = useMemo(() => {
     if (!selectedYear || !selectedMonth || !selectedDay) return "";
     return `${selectedYear}-${selectedMonth}-${selectedDay}`;
-  });
+  }, [selectedYear, selectedMonth, selectedDay]);
 
   const handleCreatePasswordPage = () => {
     setIsCreatingPassword((prev) => !prev);
   };
+
   const newUser = useMemo(() => {
     return {
       name: name,
@@ -49,8 +50,74 @@ function SignupForm() {
     };
   }, [name, email, getDob, password]);
 
+  const usedEmail = useRef([]);
+
+  useEffect(() => {
+    const fetchUserEmails = async () => {
+      const users = await getUser(API_URL);
+      if (users) {
+        usedEmail.current = users.map((u) => u.email);
+      }
+    };
+
+    fetchUserEmails();
+  }, []);
+
+  const [requiredNameWarning, setRequiredNameWarning] = useState(false);
+  const [invalidEmailWarning, setInvalidEmailWarning] = useState(false);
+  const [emailHasBeenUsedWarning, setEmailHasBeenUsedWarning] = useState(false);
+  const [isPasswordMatched, setIsPasswordMatched] = useState(true);
+  const isEmailValid = (email) => {
+    return !email || (email && email.includes("@") && email.includes("."));
+  };
+
+  const checkEmailHasBeenUsed = (email) => {
+    return usedEmail.current.includes(email);
+  };
+  const handleOnBlur = (field, value) => {
+    if (field === "name") {
+      setRequiredNameWarning(!value);
+    }
+
+    if (field === "email") {
+      const isValid = isEmailValid(value);
+      const isUsed = checkEmailHasBeenUsed(value);
+
+      setInvalidEmailWarning(!isValid);
+      setEmailHasBeenUsedWarning(isValid && isUsed);
+    }
+
+    if (field === "confirmPassword") {
+      if (!password || !value.trim()) {
+        setIsPasswordMatched(true);
+      } else {
+        setIsPasswordMatched(password.trim() === value.trim());
+      }
+    }
+  };
+
+  const handleOnInput = (field, value) => {
+    if (field === "name" && value.trim()) {
+      setRequiredNameWarning(false);
+    }
+
+    if (field === "email") {
+      const isValid = isEmailValid(value);
+      const isUsed = checkEmailHasBeenUsed(value);
+
+      setInvalidEmailWarning(!isValid);
+      setEmailHasBeenUsedWarning(isValid && isUsed);
+    }
+
+    if (field === "confirmPassword") {
+      const isMatched = password.trim() === value.trim();
+      setIsPasswordMatched(isMatched);
+    }
+  };
+
   const [enableSignupButton, setEnableSignupButton] = useState(false);
   const [enableNextButton, setEnableNextButton] = useState(false);
+
   useEffect(() => {
     if (password && confirmPassword) {
       setEnableSignupButton(password === confirmPassword);
@@ -59,10 +126,26 @@ function SignupForm() {
 
   useEffect(() => {
     const isFormFilled =
-      !!name && !!email && !!selectedDay && !!selectedMonth && !!selectedYear;
-    setEnableNextButton(isFormFilled);
-  }, [name, email, selectedDay, selectedMonth, selectedYear]);
+      !!name &&
+      !!email &&
+      isEmailValid(email) &&
+      !emailHasBeenUsedWarning &&
+      !!selectedDay &&
+      !!selectedMonth &&
+      !!selectedYear;
 
+    setEnableNextButton(isFormFilled);
+  }, [
+    name,
+    email,
+    emailHasBeenUsedWarning,
+    selectedDay,
+    selectedMonth,
+    selectedYear,
+  ]);
+  const saveUserSession = (user) => {
+    sessionStorage.setItem("currentUser", JSON.stringify(user));
+  };
   const createAccount = async () => {
     try {
       const newAccount = await createUser(API_URL, newUser);
@@ -73,6 +156,7 @@ function SignupForm() {
         };
         const loginUser = await userLogin(API_URL, user);
         if (loginUser) {
+          saveUserSession(loginUser.user);
           navigator("/home");
         }
       }
@@ -120,35 +204,63 @@ function SignupForm() {
             <input
               type="text"
               placeholder="Name"
-              className="pl-2 w-[450px] border-2 border-[rgba(77,86,96,0.4)] h-16 mt-7 rounded-md outline-0 focus:border-blue-500"
+              className={`pl-2 w-[450px] border-2  h-16 mt-7 rounded-md outline-0  ${
+                requiredNameWarning
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-[rgba(77,86,96,0.4)] focus:border-blue-500"
+              } `}
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onBlur={(e) => handleOnBlur("name", e.target.value)}
+              onInput={(e) => handleOnInput("name", e.target.value)}
             />
+            {requiredNameWarning && (
+              <p className="text-red-500 text-[12px] pt-1 pl-3 -mb-5">
+                Where's your name?
+              </p>
+            )}
             <input
               type="text"
               placeholder="Email"
-              className="pl-2 w-[450px] border-2 border-[rgba(77,86,96,0.4)] h-16 mt-7 rounded-md outline-0 focus:border-blue-500"
+              className={`pl-2 w-[450px] border-2  h-16 mt-7 rounded-md outline-0 ${
+                invalidEmailWarning || emailHasBeenUsedWarning
+                  ? "border-red-500 focus:border-red-500 "
+                  : "border-[rgba(77,86,96,0.4)] focus:border-blue-500 "
+              } `}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={(e) => handleOnBlur("email", e.target.value)}
+              onInput={(e) => handleOnInput("email", e.target.value)}
             />
+            {invalidEmailWarning && (
+              <p className="text-red-500 text-[12px] pt-1 pl-3 -mb-5">
+                Please enter a valid email.
+              </p>
+            )}
+            {emailHasBeenUsedWarning && (
+              <p className="text-red-500 text-[12px] pt-1 pl-3 -mb-5">
+                This email has been used.
+              </p>
+            )}
           </div>
-          <div class="mt-9 w-[450px]">
-            <p class="font-semibold">Date of birth</p>
-            <p class="text-[rgba(178,185,193,0.4)] text-sm mt-2">
+          <div className="mt-9 w-[450px]">
+            <p className="font-semibold">Date of birth</p>
+            <p className="text-[rgba(178,185,193,0.4)] text-sm mt-2">
               This will not be shown publicly. Confirm your own age, even if
               this account is for a business, a pet, or something else
             </p>
           </div>
 
-          <div class="flex gap-2 w-[450px]">
+          <div className="flex gap-2 w-[450px]">
             <div>
               <select
                 name="month"
                 className="w-[220px] border-2 border-[rgba(77,86,96,0.4)] h-14 mt-7 rounded-md outline-0 focus:border-blue-500 pl-2"
                 onChange={(e) => setSelectedMonth(e.target.value)}
+                value={selectedMonth}
               >
-                <option disabled selected value="">
-                  {selectedMonth ? months[selectedMonth - 1] : "Month"}
+                <option disabled value="">
+                  Month
                 </option>
                 {months.map((month, index) => (
                   <option
@@ -166,9 +278,10 @@ function SignupForm() {
                 name="day"
                 className="w-[100px] border-2 border-[rgba(77,86,96,0.4)] h-14 mt-7 rounded-md outline-0 focus:border-blue-500 pl-2"
                 onChange={(e) => setSelectedDay(e.target.value)}
+                value={selectedDay}
               >
-                <option disabled selected value="">
-                  {selectedDay ? selectedDay : "Day"}
+                <option disabled value="">
+                  Day
                 </option>
                 {days.map((day, index) => (
                   <option
@@ -186,9 +299,10 @@ function SignupForm() {
                 name="year"
                 className="border-2 border-[rgba(77,86,96,0.4)] h-14 mt-7 rounded-md outline-0 focus:border-blue-500 w-[130px] pl-2"
                 onChange={(e) => setSelectedYear(e.target.value)}
+                value={selectedYear}
               >
-                <option disabled selected value="">
-                  {selectedYear ? selectedYear : "Year"}
+                <option disabled value="">
+                  Year
                 </option>
                 {years.map((year, index) => (
                   <option
@@ -235,9 +349,19 @@ function SignupForm() {
               placeholder="Confirm password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="pl-2 w-[450px] border-2 border-[rgba(77,86,96,0.4)] h-16 mt-7 rounded-md outline-0 focus:border-blue-500"
+              onBlur={(e) => handleOnBlur("confirmPassword", e.target.value)}
+              onInput={(e) => handleOnInput("confirmPassword", e.target.value)}
+              className={`pl-2 w-[450px] border-2  h-16 mt-7 rounded-md outline-0  ${
+                !isPasswordMatched
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-[rgba(77,86,96,0.4)] focus:border-blue-500"
+              } `}
             />
-
+            {!isPasswordMatched && (
+              <p className="text-red-500 text-[12px] pt-1 pl-3 -mb-5">
+                Passwords didn’t match.
+              </p>
+            )}
             <button
               onClick={createAccount}
               disabled={!enableSignupButton}
