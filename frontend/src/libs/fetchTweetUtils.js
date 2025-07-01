@@ -77,6 +77,48 @@ const deleteTweet = async (url, id) => {
   }
 };
 
+const likeTweet = async (baseUrl, tweetId, userId) => {
+  try {
+    const res = await fetch(`${baseUrl}/tweet/like/${tweetId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to like tweet");
+    }
+
+    const updatedTweet = await res.json();
+    return updatedTweet;
+  } catch (error) {
+    console.error("Like tweet error:", error);
+    throw error;
+  }
+};
+const unLikeTweet = async (baseUrl, tweetId, userId) => {
+  try {
+    const res = await fetch(`${baseUrl}/tweet/unlike/${tweetId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to like tweet");
+    }
+
+    const updatedTweet = await res.json();
+    return updatedTweet;
+  } catch (error) {
+    console.error("Like tweet error:", error);
+    throw error;
+  }
+};
 export {
   getTweet,
   getTweetById,
@@ -84,4 +126,6 @@ export {
   createTweet,
   updateTweet,
   deleteTweet,
+  likeTweet,
+  unLikeTweet
 };
