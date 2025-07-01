@@ -19,7 +19,7 @@ function SigninForm() {
   });
 
   const saveUserSession = (user) => {
-    sessionStorage.setItem("currentUser", JSON.stringify(user));
+    sessionStorage.setItem("user", JSON.stringify(user));
   };
 
   const login = async () => {
@@ -33,6 +33,7 @@ function SigninForm() {
       if (isUserLogin) {
         saveUserSession(isUserLogin.user);
         navigator("/home");
+        window.location.reload();
       }
     } catch (error) {
       setIsUsernameOrPasswordIncorrect(true);

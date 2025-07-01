@@ -1,7 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import HomePage from "./pages/HomePage";
+import ProtectedRoute from "./components/ProtectedRoute";
 function App() {
+  const user = sessionStorage.getItem("user");
+  
   return (
     <Router>
       <Routes>
@@ -14,7 +17,14 @@ function App() {
           path="/signup"
           element={<LandingPage openForm={true} formType="signup" />}
         />
-        <Route path="/home" element={<HomePage />} />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute user={user}>
+              <HomePage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
