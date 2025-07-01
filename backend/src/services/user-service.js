@@ -51,8 +51,8 @@ const update = async (id, userData) => {
   const updateData = {};
   if (name) updateData.name = name;
 
-  const isEmailValid = email.includes("@");
-  if (!isEmailValid) {
+  const isEmailValid = email && email.includes("@");
+  if (email && !isEmailValid) {
     throw createError(400, "Invalid email format.");
   }
 
