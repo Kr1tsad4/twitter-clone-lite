@@ -5,8 +5,9 @@ import { GoBell } from "react-icons/go";
 import { HiOutlineEnvelope } from "react-icons/hi2";
 import { FaRegUser } from "react-icons/fa";
 import { MdMoreHoriz } from "react-icons/md";
+import UserProfile from "./UserProfile";
 
-function SideMenu({user}) {
+function SideMenu({ user }) {
   const x_logo = (
     <svg
       aria-label="X logo"
@@ -22,14 +23,21 @@ function SideMenu({user}) {
     </svg>
   );
   return (
-    <div className="min-h-screen border-r-1 border-white w-[255px] ml-30 flex-col pt-[2px]">
-      <NavButton icon={x_logo} context="" />
-      <NavButton icon={<GoHome size={28} />} context="หน้าแรก" />
-      <NavButton icon={<HiMagnifyingGlass size={28} />} context="สำรวจ" />
-      <NavButton icon={<GoBell size={28} />} context="การแจ้งเตือน" />
-      <NavButton icon={<HiOutlineEnvelope size={28} />} context="ข้อความ" />
-      <NavButton icon={<FaRegUser size={28} />} context="ข้อมูลส่วนตัว" />
-      <NavButton icon={<MdMoreHoriz size={28} />} context="เพิ่มเติม" />
+    <div className="min-h-screen border-r-1 border-white w-[255px] ml-30 flex flex-col pt-[2px]">
+      <div>
+        <NavButton icon={x_logo} context="" />
+        <NavButton icon={<GoHome size={28} />} context="หน้าแรก" />
+        <NavButton icon={<HiMagnifyingGlass size={28} />} context="สำรวจ" />
+        <NavButton icon={<GoBell size={28} />} context="การแจ้งเตือน" />
+        <NavButton icon={<HiOutlineEnvelope size={28} />} context="ข้อความ" />
+        <NavButton icon={<FaRegUser size={28} />} context="ข้อมูลส่วนตัว" />
+        <NavButton icon={<MdMoreHoriz size={28} />} context="เพิ่มเติม" />
+        <div className="bg-white font-[600] text-[16px] text-center  p-[15px] mr-[20px] mt-[10px] hover:bg-gray-200 rounded-[70px] gap-[20px] cursor-default">
+          โพสต์
+        </div>
+      </div>
+      <UserProfile user={user} x_logo={x_logo} isSelf={true}/>  
+
     </div>
   );
 }

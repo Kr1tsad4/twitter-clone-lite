@@ -11,7 +11,7 @@ function HomePage() {
     if (currentUser) {
       setUser(currentUser);
     }
-  }, {});
+  }, []);
 
   return (
     <div className="min-h-screen bg-black flex">

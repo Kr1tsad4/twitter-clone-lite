@@ -1,7 +1,30 @@
+import RightSideBox from "./RightSideBox";
+import UserProfile from "./UserProfile";
+import TrendItem from "./TrendItem";
+
 function RightSideMenu({ user }) {
+
+  const userSuggestion = (
+    <>
+      <UserProfile user={user} x_logo={''} isSelf={false}/>  
+      <UserProfile user={user} x_logo={''} isSelf={false}/>  
+      <UserProfile user={user} x_logo={''} isSelf={false}/>
+    </>
+  );
+
+  const trendItem = (
+    <>
+      <TrendItem topic={"หวยงวดนี้"} post_number={"11.2K"}/>
+      <TrendItem topic={"เนื้อของฉัน"} post_number={"9.5K"}/>
+      <TrendItem topic={"ละมีปัญหาไรล่ะ"} post_number={"8.6K"}/>
+    </>
+  )
+
   return (
-    <div className="min-h-screen border-white ml-18 w-[310px]">
-      <h1 className="text-red-500">Right side menu</h1>
+    <div className="min-h-screen border-white ml-8 w-[350px]">
+      
+      <RightSideBox user={user} header="มีอะไรเกิดขึ้นบ้าง" item={trendItem}/>
+      <RightSideBox user={user} header="ติดตามใครดี" item={userSuggestion}/>
     </div>
   );
 }
