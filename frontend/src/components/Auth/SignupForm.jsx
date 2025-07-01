@@ -144,7 +144,7 @@ function SignupForm() {
     selectedYear,
   ]);
   const saveUserSession = (user) => {
-    sessionStorage.setItem("currentUser", JSON.stringify(user));
+    sessionStorage.setItem("user", JSON.stringify(user));
   };
   const createAccount = async () => {
     try {

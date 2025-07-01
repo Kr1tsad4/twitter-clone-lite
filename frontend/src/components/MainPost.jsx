@@ -1,26 +1,10 @@
 import Post from "./Post";
-import { useEffect, useMemo, useState } from "react";
-import { createTweet, deleteTweet, getTweet } from "../libs/fetchTweetUtils";
-import { getUserById } from "../libs/fetchUserUtils";
+import { useMemo, useState } from "react";
+import { createTweet } from "../libs/fetchTweetUtils";
 import { API_URL } from "../libs/api";
-function MainPost({ user }) {
-  const [posts, setPosts] = useState([]);
-  const [content, setContent] = useState("");
+function MainPost({ user, handledDeletePost, posts, fetchPosts }) {
   const [isInputOnFocus, setIsInputOnFocus] = useState(false);
-
-  const fetchPosts = async () => {
-    const getAllPost = await getTweet(API_URL);
-    const postWithAuthors = await Promise.all(
-      getAllPost.map(async (t) => {
-        const user = await getUserById(API_URL, t.authorId);
-        return {
-          ...t,
-          authorName: user.name,
-        };
-      })
-    );
-    setPosts(postWithAuthors);
-  };
+  const [content, setContent] = useState("");
   const postTweet = async () => {
     const newPost = {
       content: content,
@@ -43,15 +27,6 @@ function MainPost({ user }) {
   const handleInputOnFocus = () => {
     setIsInputOnFocus(true);
   };
-  const handledDeletePost = async (id) => {
-    const deletedTweet = await deleteTweet(API_URL, id);
-    if (deletedTweet) {
-      fetchPosts();
-    }
-  };
-  useEffect(() => {
-    fetchPosts();
-  }, []);
 
   return (
     <div className="min-h-screen border-r-1 border-gray-700 w-[600px] text-white ">

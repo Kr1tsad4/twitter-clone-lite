@@ -7,7 +7,7 @@ import { FaRegUser } from "react-icons/fa";
 import { MdMoreHoriz } from "react-icons/md";
 import UserProfile from "./UserProfile";
 
-function SideMenu({ user }) {
+function SideMenu({ user,logout }) {
   const x_logo = (
     <svg
       aria-label="X logo"
@@ -23,8 +23,8 @@ function SideMenu({ user }) {
     </svg>
   );
   return (
-    <div className="min-h-screen border-r-1 border-white w-[255px] ml-30 flex flex-col pt-[2px]">
-      <div>
+    <div className="min-h-screen border-r-1 border-gray-700 w-[255px] ml-30 flex flex-col pt-[2px] ">
+      <div className="fixed w-[255px]">
         <NavButton icon={x_logo} context="" />
         <NavButton icon={<GoHome size={28} />} context="หน้าแรก" />
         <NavButton icon={<HiMagnifyingGlass size={28} />} context="สำรวจ" />
@@ -32,12 +32,13 @@ function SideMenu({ user }) {
         <NavButton icon={<HiOutlineEnvelope size={28} />} context="ข้อความ" />
         <NavButton icon={<FaRegUser size={28} />} context="ข้อมูลส่วนตัว" />
         <NavButton icon={<MdMoreHoriz size={28} />} context="เพิ่มเติม" />
-        <div className="bg-white font-[600] text-[16px] text-center  p-[15px] mr-[20px] mt-[10px] hover:bg-gray-200 rounded-[70px] gap-[20px] cursor-default">
+        <div className="bg-white font-[600] text-[16px] text-center p-[15px] mr-[20px] mt-[10px] hover:bg-gray-200 rounded-[70px] gap-[20px] cursor-default">
           โพสต์
         </div>
+        <div className="mt-58">
+          <UserProfile user={user} x_logo={x_logo} isSelf={true} logout={logout}/>
+        </div>
       </div>
-      <UserProfile user={user} x_logo={x_logo} isSelf={true}/>  
-
     </div>
   );
 }
