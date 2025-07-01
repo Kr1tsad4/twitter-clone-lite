@@ -69,7 +69,7 @@ const like = async (tweetId, userId) => {
   if (!tweet) {
     throw createError(404, "Tweet not found.");
   }
-  const alreadyLiked = tweet.likes.some((u) => u !== existingUser._id);
+  const alreadyLiked = tweet.likes.includes(userId);
   if (!alreadyLiked) {
     tweet.likes.push(userId);
   }
