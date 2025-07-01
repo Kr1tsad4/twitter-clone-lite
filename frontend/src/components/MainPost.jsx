@@ -2,7 +2,17 @@ import Post from "./Post";
 import { useMemo, useState } from "react";
 import { createTweet } from "../libs/fetchTweetUtils";
 import { API_URL } from "../libs/api";
-function MainPost({ user, handledDeletePost, posts, fetchPosts }) {
+import { CiImageOn } from "react-icons/ci";
+import { MdOutlineGifBox } from "react-icons/md";
+
+function MainPost({
+  user,
+  handledDeletePost,
+  posts,
+  fetchPosts,
+  handleLike,
+  likes,
+}) {
   const [isInputOnFocus, setIsInputOnFocus] = useState(false);
   const [content, setContent] = useState("");
   const postTweet = async () => {
@@ -59,17 +69,27 @@ function MainPost({ user, handledDeletePost, posts, fetchPosts }) {
                   <p className="mt-5 text-sm text-blue-500 font-bold">
                     o ทุกคนสามารถตอบกลับ
                   </p>
-                  <div className="border-b-1 border-[rgba(143,149,157,0.4)] mt-4 w-[490px]"></div>
+                  <div className="border-b-1 border-[rgba(143,149,157,0.4)]  mt-4 w-[490px]"></div>
                 </div>
               )}
 
               <div className="flex justify-between p-3 mt-2 text-gray-400">
                 <div className="flex gap-5 cursor-pointer ">
+                  <p className="hover:text-white">
+                    {
+                      <CiImageOn
+                        size={20}
+                        color="rgb(0, 130, 239)"
+                        strokeWidth={0.8}
+                      />
+                    }
+                  </p>
+                  <p className="hover:text-white">
+                    {<MdOutlineGifBox size={20} color="rgb(0, 130, 239)" />}
+                  </p>
                   <p className="hover:text-white">o</p>
                   <p className="hover:text-white">o</p>
-                  <p className="hover:text-white">o</p>
-                  <p className="hover:text-white">o</p>
-                  <p className="hover:text-white">o</p>
+                  <p className="hover:text-white ">o</p>
                   <p className="hover:text-white">o</p>
                   <p className="hover:text-white">o</p>
                 </div>
@@ -91,7 +111,13 @@ function MainPost({ user, handledDeletePost, posts, fetchPosts }) {
         </div>
       </div>
 
-      <Post user={user} posts={posts} handledDeletePost={handledDeletePost} />
+      <Post
+        user={user}
+        posts={posts}
+        handledDeletePost={handledDeletePost}
+        handleLike={handleLike}
+        likes={likes}
+      />
     </div>
   );
 }

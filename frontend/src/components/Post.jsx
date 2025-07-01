@@ -1,8 +1,19 @@
 import { useState } from "react";
+import { FaRegHeart } from "react-icons/fa";
+import { BiRepost } from "react-icons/bi";
+import { FaRegComment } from "react-icons/fa";
+import { SiSimpleanalytics } from "react-icons/si";
+import { FaHeart } from "react-icons/fa";
 
-function Post({ user, posts, handledDeletePost }) {
+function Post({
+  user,
+  posts,
+  handledDeletePost,
+  handleLike,
+  likes,
+  countLike,
+}) {
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
-
   const toggleMenu = (index) => {
     setOpenMenuIndex(openMenuIndex === index ? null : index);
   };
@@ -38,12 +49,37 @@ function Post({ user, posts, handledDeletePost }) {
               </div>
 
               <p className=" text-gray-200">{post.content}</p>
+              <div className="flex gap-26 mt-2 text-gray-400 items-center ผ">
+                <p className="cursor-pointer hover:text-white">
+                  <FaRegComment size={15} />
+                </p>
+                <p className="cursor-pointer hover:text-white">
+                  <BiRepost size={20} />
+                </p>
+                <div className="flex gap-2 w-[18px] ">
+                  {likes[index]?.liked ? (
+                    <button
+                      className="cursor-pointer"
+                      onClick={() => handleLike(index, post._id, false)}
+                    >
+                      <FaHeart size={15} color="rgb(231, 84, 108)" />
+                    </button>
+                  ) : (
+                    <button
+                      className="cursor-pointer hover:text-red-400"
+                      onClick={() => handleLike(index, post._id, true)}
+                    >
+                      <FaRegHeart size={15} />
+                    </button>
+                  )}
+                  {likes[index]?.count > 0 && (
+                    <p className="text-[12px]">{likes[index]?.count}</p>
+                  )}
+                </div>
 
-              <div className="flex gap-25 mt-1 text-gray-400">
-                <p className="cursor-pointer hover:text-white">o</p>
-                <p className="cursor-pointer hover:text-white">o</p>
-                <p className="cursor-pointer hover:text-white">o</p>
-                <p className="cursor-pointer hover:text-white">o</p>
+                <p className="cursor-pointer hover:text-white">
+                  <SiSimpleanalytics size={15} />
+                </p>
               </div>
             </div>
           </div>
