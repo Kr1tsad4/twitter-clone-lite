@@ -12,6 +12,11 @@ const tweetSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tweet", 
+      default: null,
+    },
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,

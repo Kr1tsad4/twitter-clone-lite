@@ -24,7 +24,7 @@ const findTweetByUserId = async (userId) => {
 };
 
 const create = async (tweet) => {
-  const { content, authorId, likes, comments } = tweet;
+  const { content, authorId, likes, comments,replyTo } = tweet;
   if (!content) {
     throw createError(400, "Content is required.");
   }
@@ -33,6 +33,7 @@ const create = async (tweet) => {
     authorId,
     likes,
     comments,
+    replyTo: replyTo || null,
   });
   const tweetObj = newTweet.toObject();
   delete tweetObj.__v;

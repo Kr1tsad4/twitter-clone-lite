@@ -1,7 +1,7 @@
+import { useEffect, useState } from "react";
 import LeftSideMenu from "../components/LeftSideMenu";
 import MainPost from "../components/MainPost";
 import RightSideMenu from "../components/RightSideMenu";
-import { useEffect, useState } from "react";
 import {
   deleteTweet,
   getTweet,
@@ -11,15 +11,17 @@ import {
 import { getUserById } from "../libs/fetchUserUtils";
 import { API_URL } from "../libs/api";
 import { useNavigate } from "react-router-dom";
+
 function HomePage() {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [likes, setLikes] = useState(posts.map(() => false));
+  const [likes, setLikes] = useState([]);
+  const [hasPopup, setHasPopup] = useState(false);
   const navigator = useNavigate();
+
   const fetchPosts = async () => {
     const currentUser = JSON.parse(sessionStorage.getItem("user"));
     const getAllPost = await getTweet(API_URL);
-
     const postWithAuthors = await Promise.all(
       getAllPost.map(async (t) => {
         const user = await getUserById(API_URL, t.authorId);
@@ -33,9 +35,7 @@ function HomePage() {
         };
       })
     );
-
     setPosts(postWithAuthors);
-
     setLikes(
       postWithAuthors.map((post) => ({
         liked: post.likedByCurrentUser,
@@ -46,24 +46,20 @@ function HomePage() {
 
   const handledDeletePost = async (id) => {
     const deletedTweet = await deleteTweet(API_URL, id);
-    if (deletedTweet) {
-      fetchPosts();
-    }
+    if (deletedTweet) fetchPosts();
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     sessionStorage.removeItem("user");
     setUser(null);
     navigator("/login");
   };
 
   const handleLike = async (index, postId, isLike) => {
-    let post;
-    if (isLike) {
-      post = await likeTweet(API_URL, postId, user._id);
-    } else {
-      post = await unLikeTweet(API_URL, postId, user._id);
-    }
+    const post = isLike
+      ? await likeTweet(API_URL, postId, user._id)
+      : await unLikeTweet(API_URL, postId, user._id);
+
     if (post) {
       const updatedLikes = [...likes];
       updatedLikes[index] = {
@@ -75,15 +71,21 @@ function HomePage() {
   };
 
   useEffect(() => {
+    document.body.style.overflow = hasPopup ? "hidden" : "auto";
+  }, [hasPopup]);
+
+  useEffect(() => {
     fetchPosts();
     const currentUser = JSON.parse(sessionStorage.getItem("user"));
-    if (currentUser) {
-      setUser(currentUser);
-    }
+    if (currentUser) setUser(currentUser);
   }, []);
 
   return (
-    <div className="min-h-screen bg-black flex">
+    <div className={`min-h-screen flex bg-black relative`}>
+      {hasPopup && (
+        <div className="fixed inset-0 z-40 bg-[rgba(49,58,69,0.6)] "></div>
+      )}
+
       <LeftSideMenu user={user} logout={handleLogout} />
       <MainPost
         user={user}
@@ -92,6 +94,8 @@ function HomePage() {
         likes={likes}
         fetchPosts={fetchPosts}
         handleLike={handleLike}
+        setHasPopup={setHasPopup}
+        hasPopup={hasPopup}
       />
       <RightSideMenu user={user} />
     </div>
