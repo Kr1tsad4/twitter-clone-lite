@@ -1,24 +1,13 @@
-import { useState } from "react";
 import ListPost from "./ListPost";
 import Post from "./Post";
+import PostPopup from "./PostPopup";
 
-function MainPost({
-  user,
-  handledDeletePost,
-  posts,
-  fetchPosts,
-  handleLike,
-  likes,
-  setHasPopup,
-  hasPopup,
-}) {
-  const [openReplyPopup, setOpenReplyPopup] = useState(false);
-
+function MainPost({ user, ...tweetProps }) {
   return (
     <div className="min-h-screen border-r-1 border-gray-700 w-[600px] text-white ">
       <div
         className={`border-b border-[rgba(143,149,157,0.4)] h-13 fixed w-[598px] z-50 ${
-          !hasPopup ? "bg-black" : "backdrop-blur-md text-gray-400"
+          !tweetProps.hasPopup ? "bg-black" : "backdrop-blur-md text-gray-400"
         }`}
       >
         <div className="flex justify-center p-4 gap-60 ">
@@ -30,25 +19,15 @@ function MainPost({
           <p className="cursor-pointer">กำลังติดตาม</p>
         </div>
       </div>
-      <Post
-        fetchPosts={fetchPosts}
-        user={user}
-        isReply={false}
-        setHasPopup={setHasPopup}
-        setOpenReplyPopup={setOpenReplyPopup}
-      />
+      <Post user={user} {...tweetProps} />
 
-      <ListPost
-        user={user}
-        posts={posts}
-        handledDeletePost={handledDeletePost}
-        handleLike={handleLike}
-        likes={likes}
-        setHasPopup={setHasPopup}
-        openReplyPopup={openReplyPopup}
-        setOpenReplyPopup={setOpenReplyPopup}
-        fetchPosts={fetchPosts}
-      />
+      {tweetProps.openReplyPopup && (
+        <div className="fixed z-50 right-108 top-10 pointer-events-auto">
+          <PostPopup user={user} {...tweetProps} />
+        </div>
+      )}
+
+      <ListPost user={user} {...tweetProps} />
     </div>
   );
 }

@@ -84,7 +84,7 @@ const likeTweet = async (baseUrl, tweetId, userId) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ tweetId, userId }),
     });
 
     if (!res.ok) {
@@ -105,20 +105,42 @@ const unLikeTweet = async (baseUrl, tweetId, userId) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ tweetId,userId }),
     });
 
     if (!res.ok) {
-      throw new Error("Failed to like tweet");
+      throw new Error("Failed to unlike tweet");
     }
 
     const updatedTweet = await res.json();
     return updatedTweet;
   } catch (error) {
-    console.error("Like tweet error:", error);
+    console.error("Unlike tweet error:", error);
     throw error;
   }
 };
+const commentTweet = async (baseUrl, tweetId, userId,content) => {
+  try {
+    const res = await fetch(`${baseUrl}/tweet/comment/${tweetId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ tweetId,userId ,content}),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to comment tweet");
+    }
+
+    const updatedTweet = await res.json();
+    return updatedTweet;
+  } catch (error) {
+    console.error("Comment tweet error:", error);
+    throw error;
+  }
+};
+
 export {
   getTweet,
   getTweetById,
@@ -127,5 +149,6 @@ export {
   updateTweet,
   deleteTweet,
   likeTweet,
-  unLikeTweet
+  unLikeTweet,
+  commentTweet
 };

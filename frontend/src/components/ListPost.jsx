@@ -4,56 +4,25 @@ import { BiRepost } from "react-icons/bi";
 import { FaRegComment } from "react-icons/fa";
 import { SiSimpleanalytics } from "react-icons/si";
 import { FaHeart } from "react-icons/fa";
-import PostPopup from "./PostPopup";
-import { API_URL } from "../libs/api";
-import { getTweetById } from "../libs/fetchTweetUtils";
-import { getUserById } from "../libs/fetchUserUtils";
 
-function ListPost({
-  user,
-  posts,
-  handledDeletePost,
-  handleLike,
-  likes,
-  setHasPopup,
-  openReplyPopup,
-  setOpenReplyPopup,
-  fetchPosts
-}) {
+function ListPost({ user, posts, likes, deletePost, like, handleReplyPost }) {
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
+
   const toggleMenu = (index) => {
     setOpenMenuIndex(openMenuIndex === index ? null : index);
   };
 
-  const [replyPost, setReplyPost] = useState(null);
-  const handleReplyPost = async (postId) => {
-    setOpenReplyPopup(true);
-    setHasPopup(true);
-    const getReplyPost = await getTweetById(API_URL, postId);
-    if (getReplyPost) {
-      const userData = await getUserById(API_URL, getReplyPost.authorId);
-      setReplyPost({ ...getReplyPost, authorName: userData.name });
-    }
+  const handledDeletePost = async (postId) => {
+    await deletePost(postId);
+    setOpenMenuIndex(null);
   };
-
+  const handleLike = async (index, postId, isLike) => {
+    await like(index, postId, isLike);
+  };
   return (
     <div className="mb-20">
       {posts.map((post, index) => (
-        <div key={index} className="p-4 border-b border-gray-700">
-          {openReplyPopup && (
-            <div className="fixed z-50 right-108 top-10 pointer-events-auto">
-              <PostPopup
-                openPopup={openReplyPopup}
-                isPost={false}
-                postToReply={replyPost}
-                user={user}
-                setOpenReplyPopup={setOpenReplyPopup}
-                setHasPopup={setHasPopup}
-                fetchPosts={fetchPosts}
-              />
-            </div>
-          )}
-
+        <div key={post._id || index} className="p-4 border-b border-gray-700">
           <div className="flex items-start gap-4">
             <div className="h-10 w-10 border-2 border-white rounded-full"></div>
 
@@ -68,10 +37,10 @@ function ListPost({
                   ...
                   {openMenuIndex === index && (
                     <div className="bg-black shadow-white shadow-md h-100 w-85 p-3 absolute right-0 z-50">
-                      {user._id === post.authorId && (
+                      {user && user._id === post.authorId && (
                         <button
                           onClick={() => handledDeletePost(post._id)}
-                          className="text-red-500 p-2 cursor-pointer rounded w-85 text-start"
+                          className="text-red-500 p-2 cursor-pointer rounded w-85 text-start hover:bg-gray-800"
                         >
                           ลบ
                         </button>
@@ -80,8 +49,16 @@ function ListPost({
                   )}
                 </div>
               </div>
+              {post.replyToAuthorName && (
+                <p className="text-sm text-gray-400">
+                  การตอบกลับถึง
+                  <span className="text-blue-500">
+                    @{post.replyToAuthorName}
+                  </span>
+                </p>
+              )}
               <p className=" text-gray-200">{post.content}</p>
-              <div className="flex gap-26 mt-2 text-gray-400 items-center ผ">
+              <div className="flex gap-26 mt-2 text-gray-400 items-center">
                 <button
                   onClick={() => handleReplyPost(post._id)}
                   className="cursor-pointer hover:text-white"
@@ -91,7 +68,7 @@ function ListPost({
                 <p className="cursor-pointer hover:text-white">
                   <BiRepost size={20} />
                 </p>
-                <div className="flex gap-2 w-[18px] ">
+                <div className="flex gap-2 w-[18px] items-center">
                   {likes[index]?.liked ? (
                     <button
                       className="cursor-pointer"
