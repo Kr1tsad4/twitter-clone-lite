@@ -1,13 +1,22 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FaRegHeart } from "react-icons/fa";
 import { BiRepost } from "react-icons/bi";
 import { FaRegComment } from "react-icons/fa";
 import { SiSimpleanalytics } from "react-icons/si";
 import { FaHeart } from "react-icons/fa";
 
-function ListPost({ user, posts, likes, deletePost, like, handleReplyPost }) {
+function ListPost({
+  user,
+  posts,
+  selectedPost,
+  likes,
+  comments,
+  deletePost,
+  like,
+  handleReplyPost,
+  handleViewPost,
+}) {
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
-
   const toggleMenu = (index) => {
     setOpenMenuIndex(openMenuIndex === index ? null : index);
   };
@@ -19,16 +28,40 @@ function ListPost({ user, posts, likes, deletePost, like, handleReplyPost }) {
   const handleLike = async (index, postId, isLike) => {
     await like(index, postId, isLike);
   };
+
+  const postToList = useMemo(() => {
+    console.log(selectedPost);
+    return selectedPost ? [selectedPost] : posts;
+  }, [selectedPost, posts]);
+
   return (
     <div className="mb-20">
-      {posts.map((post, index) => (
-        <div key={post._id || index} className="p-4 border-b border-gray-700">
-          <div className="flex items-start gap-4">
+      {postToList.map((post, index) => (
+        <div
+          key={post._id || index}
+          className="p-4 border-b border-gray-700 cursor-pointer"
+        >
+          <div
+            className="flex items-start gap-4"
+            onClick={() => handleViewPost(true, post._id)}
+          >
             <div className="h-10 w-10 border-2 border-white rounded-full"></div>
 
             <div className="flex-1">
               <div className="flex justify-between items-start">
-                <h1 className="font-semibold text-white">{post.authorName}</h1>
+                <div className={`${posts && !selectedPost ? "flex" : ""}`}>
+                  <h1 className="font-semibold text-white">
+                    {post.authorName}
+                  </h1>
+
+                  <span
+                    className={`text-gray-600 font-normal ${
+                      !selectedPost ? "pl-2" : ""
+                    }`}
+                  >
+                    @{post.authorName}
+                  </span>
+                </div>
 
                 <div
                   className="text-xl text-white cursor-pointer relative -mt-3"
@@ -57,29 +90,45 @@ function ListPost({ user, posts, likes, deletePost, like, handleReplyPost }) {
                   </span>
                 </p>
               )}
-              <p className=" text-gray-200">{post.content}</p>
+              <p className=" text-gray-200 mt-1">{post.content}</p>
               <div className="flex gap-26 mt-2 text-gray-400 items-center">
-                <button
-                  onClick={() => handleReplyPost(post._id)}
-                  className="cursor-pointer hover:text-white"
-                >
-                  <FaRegComment size={15} />
-                </button>
+                <div className="flex w-[18px] gap-2 items-center">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleReplyPost(post._id);
+                    }}
+                    className="cursor-pointer hover:text-white"
+                  >
+                    <FaRegComment size={15} />
+                  </button>
+                  {comments[index]?.count > 0 && (
+                    <p className="text-[12px]">{comments[index]?.count}</p>
+                  )}
+                </div>
+
                 <p className="cursor-pointer hover:text-white">
                   <BiRepost size={20} />
                 </p>
+
                 <div className="flex gap-2 w-[18px] items-center">
                   {likes[index]?.liked ? (
                     <button
                       className="cursor-pointer"
-                      onClick={() => handleLike(index, post._id, false)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLike(index, post._id, false);
+                      }}
                     >
                       <FaHeart size={15} color="rgb(231, 84, 108)" />
                     </button>
                   ) : (
                     <button
                       className="cursor-pointer hover:text-red-400"
-                      onClick={() => handleLike(index, post._id, true)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLike(index, post._id, true);
+                      }}
                     >
                       <FaRegHeart size={15} />
                     </button>
