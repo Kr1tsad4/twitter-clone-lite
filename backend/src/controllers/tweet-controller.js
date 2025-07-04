@@ -24,7 +24,8 @@ const createTweet = asyncHandler(async (req, res) => {
 const editTweet = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const content = req.body.content;
-  const editedTweet = await tweetService.edit(id, content);
+  const commentCount = req.body.commentCount
+  const editedTweet = await tweetService.edit(id, content,commentCount);
   return res.status(200).json(editedTweet);
 });
 
@@ -47,12 +48,6 @@ const unlikeTweet = asyncHandler(async (req, res) => {
   return res.status(200).json(unLikedTweet);
 });
 
-const commentTweet = asyncHandler(async (req, res) => {
-  const tweetId = req.params.id;
-  const { userId, content } = req.body;
-  const commentedTweet = await tweetService.comment(tweetId, userId, content);
-  return res.status(200).json(commentedTweet);
-});
 module.exports = {
   getAllTweet,
   getTweetById,
@@ -61,6 +56,5 @@ module.exports = {
   editTweet,
   deleteTweet,
   likeTweet,
-  unlikeTweet,
-  commentTweet,
+  unlikeTweet
 };

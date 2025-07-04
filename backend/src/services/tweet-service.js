@@ -16,6 +16,7 @@ const findByTweetId = async (id) => {
 
 const findTweetByUserId = async (userId) => {
   const existingUser = await User.findById(userId).select("-__v");
+  User.find();
   if (!existingUser) {
     throw createError(404, "User not found.");
   }
@@ -24,7 +25,7 @@ const findTweetByUserId = async (userId) => {
 };
 
 const create = async (tweet) => {
-  const { content, authorId, likes, comments,replyTo } = tweet;
+  const { content, authorId, likes, commentCount, replyTo } = tweet;
   if (!content) {
     throw createError(400, "Content is required.");
   }
@@ -32,15 +33,15 @@ const create = async (tweet) => {
     content,
     authorId,
     likes,
-    comments,
-    replyTo: replyTo || null,
+    commentCount,
+    replyTo,
   });
   const tweetObj = newTweet.toObject();
   delete tweetObj.__v;
   return newTweet;
 };
 
-const edit = async (id, newContent) => {
+const edit = async (id, newContent, commentCount) => {
   const tweetToEdit = await Tweet.findById(id);
   if (!tweetToEdit) {
     throw createError(404, "Tweet not found.");
@@ -49,6 +50,7 @@ const edit = async (id, newContent) => {
     throw createError(400, "Content is required.");
   }
   tweetToEdit.content = newContent;
+  tweetToEdit.commentCount = commentCount;
   const editedTweet = await tweetToEdit.save();
   return editedTweet;
 };
@@ -94,22 +96,6 @@ const unlike = async (tweetId, userId) => {
   return updatedLikeTweet;
 };
 
-const comment = async (tweetId, userId, content) => {
-  const tweet = await Tweet.findById(tweetId);
-  const existingUser = await User.findById(userId);
-  if (!existingUser) {
-    throw createError(404, "User not found.");
-  }
-  if (!tweet) {
-    throw createError(404, "Tweet not found.");
-  }
-  if (!content) {
-    throw createError(400, "Comment content is required.");
-  }
-  tweet.comments.push({ user: existingUser._id, content: content });
-  await tweet.save();
-  return tweet;
-};
 module.exports = {
   findAll,
   findByTweetId,
@@ -119,5 +105,4 @@ module.exports = {
   deleteTweet,
   like,
   unlike,
-  comment,
 };
