@@ -14,17 +14,18 @@ import { API_URL } from "../libs/api";
 export const useTweets = (user) => {
   const [posts, setPosts] = useState([]);
   const [likes, setLikes] = useState([]);
+  const [comments, setComments] = useState([]);
   const [isInputOnFocus, setIsInputOnFocus] = useState(false);
   const [content, setContent] = useState("");
   const [hasPopup, setHasPopup] = useState(false);
   const [replyPost, setReplyPost] = useState(null);
-  const [openReplyPopup, setOpenReplyPopup] = useState(false);
   const [isReply, setIsReply] = useState(false);
   const [openPopup, setOpenPopup] = useState(false);
   const [replyToPostId, setReplyToPostId] = useState("");
+  const [isViewPost, setIsViewPost] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
 
   const handleReplyPost = async (postId) => {
-    setOpenReplyPopup(true);
     setHasPopup(true);
     setOpenPopup(true);
     setIsReply(true);
@@ -61,7 +62,6 @@ export const useTweets = (user) => {
         setContent("");
         setIsInputOnFocus(false);
         setHasPopup(false);
-        setOpenReplyPopup(false);
         setOpenPopup(false);
         setIsReply(false);
         setReplyPost(null);
@@ -81,6 +81,66 @@ export const useTweets = (user) => {
     setIsInputOnFocus(true);
   };
 
+  const handleViewPost = async (isView, postId) => {
+    setIsViewPost(isView);
+    if (isView && postId) {
+      try {
+        const post = await getTweetById(API_URL, postId);
+
+        if (post) {
+          const currentUser = JSON.parse(sessionStorage.getItem("user"));
+          const author = await getUserById(API_URL, post.authorId);
+
+          let replyToAuthorName = null;
+          if (post.replyTo) {
+            try {
+              const replyToPost = await getTweetById(API_URL, post.replyTo);
+              const replyToAuthor = await getUserById(
+                API_URL,
+                replyToPost.authorId
+              );
+              replyToAuthorName = replyToAuthor.name;
+            } catch (error) {
+              console.log(error);
+            }
+          }
+
+          setSelectedPost({
+            ...post,
+            authorName: author?.name || "Unknown",
+            likedByCurrentUser: currentUser
+              ? post.likes.includes(currentUser._id)
+              : false,
+            likeCount: post.likes.length,
+            commentedByCurrentUser: currentUser
+              ? post.comments.some((c) => c.user === currentUser._id)
+              : false,
+            commentCount: post.comments.length,
+            replyToAuthorName,
+          });
+
+          setLikes([
+            {
+              liked: post.likes.includes(currentUser._id),
+              count: post.likes.length,
+            },
+          ]);
+          setComments([
+            {
+              comment: post.comments.some((c) => c.user === currentUser._id),
+              count: post.comments.length,
+            },
+          ]);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      setSelectedPost(null);
+      await fetchPosts();
+    }
+  };
+
   const fetchPosts = useCallback(async () => {
     try {
       const currentUser = JSON.parse(sessionStorage.getItem("user"));
@@ -89,9 +149,7 @@ export const useTweets = (user) => {
       const postWithAuthors = await Promise.all(
         getAllPost.map(async (t) => {
           const author = await getUserById(API_URL, t.authorId);
-
           let replyToAuthorName = null;
-          console.log(t.replyTo);
           if (t.replyTo) {
             try {
               const replyToPost = await getTweetById(API_URL, t.replyTo);
@@ -104,7 +162,6 @@ export const useTweets = (user) => {
               console.log(error);
             }
           }
-
           return {
             ...t,
             authorName: author.name,
@@ -113,6 +170,10 @@ export const useTweets = (user) => {
               ? t.likes.includes(currentUser._id)
               : false,
             likeCount: t.likes.length,
+            commentedByCurrentUser: currentUser
+              ? t.comments.includes(currentUser._id)
+              : false,
+            commentCount: t.comments.length,
           };
         })
       );
@@ -122,6 +183,12 @@ export const useTweets = (user) => {
         postWithAuthors.map((post) => ({
           liked: post.likedByCurrentUser,
           count: post.likeCount,
+        }))
+      );
+      setComments(
+        postWithAuthors.map((post) => ({
+          comment: post.commentedByCurrentUser,
+          count: post.commentCount,
         }))
       );
     } catch (error) {
@@ -163,7 +230,6 @@ export const useTweets = (user) => {
 
   const closePopup = () => {
     setHasPopup(false);
-    setOpenReplyPopup(false);
     setOpenPopup(false);
     setIsReply(false);
     setReplyPost(null);
@@ -177,6 +243,7 @@ export const useTweets = (user) => {
   return {
     posts,
     likes,
+    comments,
     isInputOnFocus,
     content,
     hasPopup,
@@ -188,8 +255,6 @@ export const useTweets = (user) => {
     like,
     replyPost,
     handleReplyPost,
-    openReplyPopup,
-    setOpenReplyPopup,
     isReply,
     setIsReply,
     setContent,
@@ -197,5 +262,8 @@ export const useTweets = (user) => {
     openPopup,
     setOpenPopup,
     closePopup,
+    handleViewPost,
+    isViewPost,
+    selectedPost,
   };
 };
