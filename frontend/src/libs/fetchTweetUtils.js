@@ -119,27 +119,6 @@ const unLikeTweet = async (baseUrl, tweetId, userId) => {
     throw error;
   }
 };
-const commentTweet = async (baseUrl, tweetId, userId,content) => {
-  try {
-    const res = await fetch(`${baseUrl}/tweet/comment/${tweetId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ tweetId,userId ,content}),
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to comment tweet");
-    }
-
-    const updatedTweet = await res.json();
-    return updatedTweet;
-  } catch (error) {
-    console.error("Comment tweet error:", error);
-    throw error;
-  }
-};
 
 export {
   getTweet,
@@ -149,6 +128,5 @@ export {
   updateTweet,
   deleteTweet,
   likeTweet,
-  unLikeTweet,
-  commentTweet
+  unLikeTweet
 };

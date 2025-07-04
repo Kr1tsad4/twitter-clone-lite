@@ -108,8 +108,8 @@ function ListPost({
                   >
                     <FaRegComment size={15} />
                   </button>
-                  {comments[index]?.count > 0 && (
-                    <p className="text-[12px]">{comments[index]?.count}</p>
+                  {post.commentCount > 0 && (
+                    <p className="text-[12px]">{post.commentCount}</p>
                   )}
                 </div>
 

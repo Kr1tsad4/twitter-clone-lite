@@ -5,8 +5,8 @@ import {
   getTweet,
   likeTweet,
   unLikeTweet,
-  commentTweet,
   getTweetById,
+  updateTweet,
 } from "../libs/fetchTweetUtils";
 import { getUserById } from "../libs/fetchUserUtils";
 import { API_URL } from "../libs/api";
@@ -49,16 +49,19 @@ export const useTweets = (user) => {
       replyTo: isReply ? replyToPostId : null,
       authorId: user._id,
       likes: [],
-      comments: [],
+      comments: 0,
     };
 
     try {
       const createdPost = await createTweet(API_URL, newPost);
       if (createdPost) {
         if (isReply) {
-          await commentTweet(API_URL, replyToPostId, user._id, content.trim());
+          const post = await getTweetById(API_URL, createdPost.replyTo);
+          const p = await updateTweet(API_URL, post._id, {
+            content: post.content,
+            commentCount: post.commentCount + 1,
+          });
         }
-
         setContent("");
         setIsInputOnFocus(false);
         setHasPopup(false);
@@ -170,10 +173,6 @@ export const useTweets = (user) => {
               ? t.likes.includes(currentUser._id)
               : false,
             likeCount: t.likes.length,
-            commentedByCurrentUser: currentUser
-              ? t.comments.includes(currentUser._id)
-              : false,
-            commentCount: t.comments.length,
           };
         })
       );
@@ -185,12 +184,6 @@ export const useTweets = (user) => {
           count: post.likeCount,
         }))
       );
-      setComments(
-        postWithAuthors.map((post) => ({
-          comment: post.commentedByCurrentUser,
-          count: post.commentCount,
-        }))
-      );
     } catch (error) {
       console.log(error);
     }
@@ -198,8 +191,14 @@ export const useTweets = (user) => {
 
   const deletePost = async (id) => {
     try {
+      const post = await getTweetById(API_URL, id);
+      const parentPost = await getTweetById(API_URL, post.replyTo);
       const deletedTweet = await deleteTweet(API_URL, id);
       if (deletedTweet) {
+        await updateTweet(API_URL, parentPost._id, {
+          content: parentPost.content,
+          commentCount: parentPost.commentCount - 1,
+        });
         await fetchPosts();
       }
     } catch (error) {
