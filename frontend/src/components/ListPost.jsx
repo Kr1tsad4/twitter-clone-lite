@@ -65,14 +65,20 @@ function ListPost({
 
                 <div
                   className="text-xl text-white cursor-pointer relative -mt-3"
-                  onClick={() => toggleMenu(index)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleMenu(index);
+                  }}
                 >
                   ...
                   {openMenuIndex === index && (
                     <div className="bg-black shadow-white shadow-md h-100 w-85 p-3 absolute right-0 z-50">
                       {user && user._id === post.authorId && (
                         <button
-                          onClick={() => handledDeletePost(post._id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handledDeletePost(post._id);
+                          }}
                           className="text-red-500 p-2 cursor-pointer rounded w-85 text-start hover:bg-gray-800"
                         >
                           ลบ
