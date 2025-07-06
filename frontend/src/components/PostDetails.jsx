@@ -10,11 +10,11 @@ function PostDetails({ user, ...tweetProps }) {
           onClick={() => handleViewPost(false)}
           className="cursor-pointer"
         >
-          <IoMdArrowBack size={20}/>
+          <IoMdArrowBack size={20} />
         </button>
         <p className="text-xl font-bold">โพสต์</p>
       </div>
-        <ListPost user={user} {...tweetProps} />
+      <ListPost user={user} {...tweetProps} />
     </div>
   );
 }

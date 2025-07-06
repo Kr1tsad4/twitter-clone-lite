@@ -68,7 +68,8 @@ function SignupForm() {
   const [emailHasBeenUsedWarning, setEmailHasBeenUsedWarning] = useState(false);
   const [isPasswordMatched, setIsPasswordMatched] = useState(true);
   const isEmailValid = (email) => {
-    return !email || (email && email.includes("@") && email.includes("."));
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
   const checkEmailHasBeenUsed = (email) => {

@@ -1,4 +1,4 @@
-import Post from "./Post";
+import PostForm from "./PostForm";
 import { RxCross1 } from "react-icons/rx";
 
 function PostPopup({
@@ -48,7 +48,7 @@ function PostPopup({
         </div>
       </div>
 
-      <Post
+      <PostForm
         user={user}
         isInputOnFocus={isInputOnFocus}
         isReply={isReply}

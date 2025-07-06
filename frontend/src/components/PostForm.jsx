@@ -1,7 +1,7 @@
 import { CiImageOn } from "react-icons/ci";
 import { MdOutlineGifBox } from "react-icons/md";
 
-function Post({
+function PostForm({
   isInputOnFocus,
   isReply,
   content,
@@ -82,4 +82,4 @@ function Post({
   );
 }
 
-export default Post;
+export default PostForm;
