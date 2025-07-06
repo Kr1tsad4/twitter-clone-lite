@@ -18,11 +18,11 @@ const create = async (userData) => {
   const { name, email, dob, password } = userData;
   const existingEmail = await User.findOne({ email: userData.email });
   if (existingEmail) {
-    throw new Error("This email has been used.");
+    throw createError(400, "This email has been used.");
   }
-  const isEmailValid = email.includes("@");
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
   if (!isEmailValid) {
-    throw new Error("Invalid email format.");
+    throw createError(400, "Invalid email format.");
   }
   const hashPassword = await bcrypt.hash(password, 10);
   const newUser = await User.create({
@@ -44,24 +44,23 @@ const update = async (id, userData) => {
   if (!existingUser) {
     throw createError(404, `User not found with id ${id}.`);
   }
-
   const { name, email, dob, password, newPassword } = userData;
-  const existingEmail = await User.findOne({ email: email });
-
   const updateData = {};
-  if (name) updateData.name = name;
-
-  const isEmailValid = email && email.includes("@");
-  if (email && !isEmailValid) {
-    throw createError(400, "Invalid email format.");
-  }
+  const existingEmail = await User.findOne({ email: email });
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 
   if (email && existingUser.email !== email) {
+    if (!isEmailValid) {
+      throw createError(400, "Invalid email format.");
+    }
     if (existingEmail) {
       throw createError(400, "This email has been used.");
     }
     updateData.email = email;
   }
+
+  if (name) updateData.name = name.trim();
+
   if (dob) updateData.dob = dob;
 
   if (password && newPassword) {
