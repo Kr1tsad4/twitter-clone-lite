@@ -1,5 +1,5 @@
 import ListPost from "./ListPost";
-import Post from "./Post";
+import PostForm from "./PostForm";
 import PostPopup from "./PostPopup";
 import PostDetails from "./PostDetails";
 function MainPost({ user, ...tweetProps }) {
@@ -23,7 +23,7 @@ function MainPost({ user, ...tweetProps }) {
             </div>
           </div>
 
-          <Post user={user} {...tweetProps} />
+          <PostForm user={user} {...tweetProps} />
 
           <ListPost user={user} {...tweetProps} />
         </>

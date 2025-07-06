@@ -14,8 +14,12 @@ const tweetSchema = new mongoose.Schema(
     },
     replyTo: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Tweet", 
+      ref: "Tweet",
       default: null,
+    },
+    commentCount: {
+      type: Number,
+      default: 0,
     },
     likes: [
       {
@@ -23,10 +27,6 @@ const tweetSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    commentCount:{
-      type:Number,
-      default:0
-    } 
   },
   { timestamps: true }
 );

@@ -10,29 +10,34 @@ function ListPost({
   posts,
   selectedPost,
   likes,
-  comments,
   deletePost,
   like,
   handleReplyPost,
   handleViewPost,
 }) {
-  const [openMenuIndex, setOpenMenuIndex] = useState(null);
+  const [openPostMenuIndex, setOpenPostMenuIndex] = useState(null);
   const toggleMenu = (index) => {
-    setOpenMenuIndex(openMenuIndex === index ? null : index);
+    setOpenPostMenuIndex(openPostMenuIndex === index ? null : index);
   };
 
   const handledDeletePost = async (postId) => {
     await deletePost(postId);
-    setOpenMenuIndex(null);
+    setOpenPostMenuIndex(null);
   };
   const handleLike = async (index, postId, isLike) => {
     await like(index, postId, isLike);
   };
 
   const postToList = useMemo(() => {
-    console.log(selectedPost);
     return selectedPost ? [selectedPost] : posts;
   }, [selectedPost, posts]);
+
+  const handlePostClick = (postId) => {
+    console.log("click");
+    if (!selectedPost) {
+      handleViewPost(true, postId);
+    }
+  };
 
   return (
     <div className="mb-20">
@@ -43,7 +48,7 @@ function ListPost({
         >
           <div
             className="flex items-start gap-4"
-            onClick={() => handleViewPost(true, post._id)}
+            onClick={() => handlePostClick(post._id)}
           >
             <div className="h-10 w-10 border-2 border-white rounded-full"></div>
 
@@ -71,7 +76,7 @@ function ListPost({
                   }}
                 >
                   ...
-                  {openMenuIndex === index && (
+                  {openPostMenuIndex === index && (
                     <div className="bg-black shadow-white shadow-md h-100 w-85 p-3 absolute right-0 z-50">
                       {user && user._id === post.authorId && (
                         <button

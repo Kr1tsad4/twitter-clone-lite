@@ -14,7 +14,6 @@ import { API_URL } from "../libs/api";
 export const useTweets = (user) => {
   const [posts, setPosts] = useState([]);
   const [likes, setLikes] = useState([]);
-  const [comments, setComments] = useState([]);
   const [isInputOnFocus, setIsInputOnFocus] = useState(false);
   const [content, setContent] = useState("");
   const [hasPopup, setHasPopup] = useState(false);
@@ -25,21 +24,58 @@ export const useTweets = (user) => {
   const [isViewPost, setIsViewPost] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
 
-  const handleReplyPost = async (postId) => {
-    setHasPopup(true);
-    setOpenPopup(true);
-    setIsReply(true);
-    setReplyToPostId(postId);
+  const enablePostButton = useMemo(() => {
+    return content.trim().length > 0;
+  }, [content]);
+
+  const handleInputOnFocus = () => {
+    setIsInputOnFocus(true);
+  };
+
+  const fetchPosts = useCallback(async () => {
     try {
-      const getReplyPost = await getTweetById(API_URL, postId);
-      if (getReplyPost) {
-        const userData = await getUserById(API_URL, getReplyPost.authorId);
-        setReplyPost({ ...getReplyPost, authorName: userData.name });
-      }
+      const currentLoginUser = JSON.parse(sessionStorage.getItem("user"));
+      const posts = await getTweet(API_URL);
+
+      const postWithAuthors = await Promise.all(
+        posts.map(async (tweet) => {
+          const author = await getUserById(API_URL, tweet.authorId);
+          let replyToAuthorName = null;
+          if (tweet.replyTo) {
+            try {
+              const replyToPost = await getTweetById(API_URL, tweet.replyTo);
+              const replyToAuthor = await getUserById(
+                API_URL,
+                replyToPost.authorId
+              );
+              replyToAuthorName = replyToAuthor.name;
+            } catch (error) {
+              console.log(error);
+            }
+          }
+          return {
+            ...tweet,
+            authorName: author.name,
+            replyToAuthorName: replyToAuthorName,
+            likedByCurrentLoginUser: currentLoginUser
+              ? tweet.likes.includes(currentLoginUser._id)
+              : false,
+            likeCount: tweet.likes.length,
+          };
+        })
+      );
+
+      setPosts(postWithAuthors);
+      setLikes(
+        postWithAuthors.map((post) => ({
+          liked: post.likedByCurrentLoginUser,
+          count: post.likeCount,
+        }))
+      );
     } catch (error) {
       console.log(error);
     }
-  };
+  }, []);
 
   const postTweet = async () => {
     if (!content.trim() || !user) return;
@@ -48,8 +84,6 @@ export const useTweets = (user) => {
       content: content.trim(),
       replyTo: isReply ? replyToPostId : null,
       authorId: user._id,
-      likes: [],
-      comments: 0,
     };
 
     try {
@@ -57,7 +91,7 @@ export const useTweets = (user) => {
       if (createdPost) {
         if (isReply) {
           const post = await getTweetById(API_URL, createdPost.replyTo);
-          const p = await updateTweet(API_URL, post._id, {
+          await updateTweet(API_URL, post._id, {
             content: post.content,
             commentCount: post.commentCount + 1,
           });
@@ -69,136 +103,6 @@ export const useTweets = (user) => {
         setIsReply(false);
         setReplyPost(null);
         setReplyToPostId(null);
-        await fetchPosts();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const enablePostButton = useMemo(() => {
-    return content.trim().length > 0;
-  }, [content]);
-
-  const handleInputOnFocus = () => {
-    setIsInputOnFocus(true);
-  };
-
-  const handleViewPost = async (isView, postId) => {
-    setIsViewPost(isView);
-    if (isView && postId) {
-      try {
-        const post = await getTweetById(API_URL, postId);
-
-        if (post) {
-          const currentUser = JSON.parse(sessionStorage.getItem("user"));
-          const author = await getUserById(API_URL, post.authorId);
-
-          let replyToAuthorName = null;
-          if (post.replyTo) {
-            try {
-              const replyToPost = await getTweetById(API_URL, post.replyTo);
-              const replyToAuthor = await getUserById(
-                API_URL,
-                replyToPost.authorId
-              );
-              replyToAuthorName = replyToAuthor.name;
-            } catch (error) {
-              console.log(error);
-            }
-          }
-
-          setSelectedPost({
-            ...post,
-            authorName: author?.name || "Unknown",
-            likedByCurrentUser: currentUser
-              ? post.likes.includes(currentUser._id)
-              : false,
-            likeCount: post.likes.length,
-            commentedByCurrentUser: currentUser
-              ? post.comments.some((c) => c.user === currentUser._id)
-              : false,
-            commentCount: post.comments.length,
-            replyToAuthorName,
-          });
-
-          setLikes([
-            {
-              liked: post.likes.includes(currentUser._id),
-              count: post.likes.length,
-            },
-          ]);
-          setComments([
-            {
-              comment: post.comments.some((c) => c.user === currentUser._id),
-              count: post.comments.length,
-            },
-          ]);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    } else {
-      setSelectedPost(null);
-      await fetchPosts();
-    }
-  };
-
-  const fetchPosts = useCallback(async () => {
-    try {
-      const currentUser = JSON.parse(sessionStorage.getItem("user"));
-      const getAllPost = await getTweet(API_URL);
-
-      const postWithAuthors = await Promise.all(
-        getAllPost.map(async (t) => {
-          const author = await getUserById(API_URL, t.authorId);
-          let replyToAuthorName = null;
-          if (t.replyTo) {
-            try {
-              const replyToPost = await getTweetById(API_URL, t.replyTo);
-              const replyToAuthor = await getUserById(
-                API_URL,
-                replyToPost.authorId
-              );
-              replyToAuthorName = replyToAuthor.name;
-            } catch (error) {
-              console.log(error);
-            }
-          }
-          return {
-            ...t,
-            authorName: author.name,
-            replyToAuthorName: replyToAuthorName,
-            likedByCurrentUser: currentUser
-              ? t.likes.includes(currentUser._id)
-              : false,
-            likeCount: t.likes.length,
-          };
-        })
-      );
-
-      setPosts(postWithAuthors);
-      setLikes(
-        postWithAuthors.map((post) => ({
-          liked: post.likedByCurrentUser,
-          count: post.likeCount,
-        }))
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }, []);
-
-  const deletePost = async (id) => {
-    try {
-      const post = await getTweetById(API_URL, id);
-      const parentPost = await getTweetById(API_URL, post.replyTo);
-      const deletedTweet = await deleteTweet(API_URL, id);
-      if (deletedTweet) {
-        await updateTweet(API_URL, parentPost._id, {
-          content: parentPost.content,
-          commentCount: parentPost.commentCount - 1,
-        });
         await fetchPosts();
       }
     } catch (error) {
@@ -227,6 +131,84 @@ export const useTweets = (user) => {
     }
   };
 
+  const handleViewPost = async (isView, postId) => {
+    setIsViewPost(isView);
+
+    if (isView && postId) {
+      try {
+        const post = await getTweetById(API_URL, postId);
+        const currentLoginUser = JSON.parse(sessionStorage.getItem("user"));
+        const author = await getUserById(API_URL, post.authorId);
+        console.log("55");
+        let replyToAuthorName = null;
+        if (post.replyTo) {
+          const replyToPost = await getTweetById(API_URL, post.replyTo);
+          const replyToAuthor = await getUserById(
+            API_URL,
+            replyToPost.authorId
+          );
+          replyToAuthorName = replyToAuthor.name;
+        }
+
+        setSelectedPost({
+          ...post,
+          authorName: author?.name || "Unknown",
+          likedByCurrentLoginUser: currentLoginUser
+            ? post.likes.includes(currentLoginUser._id)
+            : false,
+          likeCount: post.likes.length,
+          commentCount: post.comments ? post.comments.length : 0,
+          replyToAuthorName,
+        });
+
+        setLikes([
+          {
+            liked: post.likes.includes(currentLoginUser._id),
+            count: post.likes.length,
+          },
+        ]);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      setSelectedPost(null);
+      await fetchPosts();
+    }
+  };
+
+  const handleReplyPost = async (postId) => {
+    setHasPopup(true);
+    setOpenPopup(true);
+    setIsReply(true);
+    setReplyToPostId(postId);
+    try {
+      const getReplyPost = await getTweetById(API_URL, postId);
+      if (getReplyPost) {
+        const userData = await getUserById(API_URL, getReplyPost.authorId);
+        setReplyPost({ ...getReplyPost, authorName: userData.name });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const deletePost = async (id) => {
+    try {
+      const post = await getTweetById(API_URL, id);
+      const parentPost = await getTweetById(API_URL, post.replyTo);
+      const deletedTweet = await deleteTweet(API_URL, id);
+      if (deletedTweet) {
+        await updateTweet(API_URL, parentPost._id, {
+          content: parentPost.content,
+          commentCount: parentPost.commentCount - 1,
+        });
+        await fetchPosts();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const closePopup = () => {
     setHasPopup(false);
     setOpenPopup(false);
@@ -242,7 +224,6 @@ export const useTweets = (user) => {
   return {
     posts,
     likes,
-    comments,
     isInputOnFocus,
     content,
     hasPopup,

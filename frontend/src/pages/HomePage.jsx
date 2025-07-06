@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import LeftSideMenu from "../components/LeftSideMenu";
+import NavigationMenu from "../components/NavigationMenu";
 import MainPost from "../components/MainPost";
 import RightSideMenu from "../components/RightSideMenu";
 import { useTweets } from "../hooks/useTweets";
 import { useNavigate } from "react-router-dom";
 
 function HomePage() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); 
   const navigator = useNavigate();
 
   const tweetProps = useTweets(user);
@@ -34,7 +34,7 @@ function HomePage() {
         <div className="fixed inset-0 z-40 bg-[rgba(49,58,69,0.6)] "></div>
       )}
 
-      <LeftSideMenu user={user} logout={handleLogout} />
+      <NavigationMenu user={user} logout={handleLogout} />
       <MainPost user={user} {...tweetProps} />
       <RightSideMenu user={user} />
     </div>
