@@ -105,7 +105,11 @@ export const useTweets = (user) => {
         setIsReply(false);
         setReplyPost(null);
         setReplyToPostId(null);
-        await fetchPosts();
+        if (selectedPost) {
+          await handleViewPost(true, selectedPost._id);
+        } else {
+          await fetchPosts();
+        }
       }
     } catch (error) {
       console.log(error);
@@ -127,6 +131,22 @@ export const useTweets = (user) => {
           count: post.likes.length,
         };
         setLikes(updatedLikes);
+
+        if (selectedPost) {
+          const updatedPost = { ...selectedPost };
+
+          if (index === 0) {
+            updatedPost.likes = post.likes;
+            updatedPost.likedByCurrentLoginUser = isLike;
+            updatedPost.likeCount = post.likes.length;
+          } else if (updatedPost.comments && updatedPost.comments[index - 1]) {
+            updatedPost.comments[index - 1].likes = post.likes;
+            updatedPost.comments[index - 1].likedByCurrentLoginUser = isLike;
+            updatedPost.comments[index - 1].likeCount = post.likes.length;
+          }
+
+          setSelectedPost(updatedPost);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -152,6 +172,7 @@ export const useTweets = (user) => {
           );
           replyToAuthorName = replyToAuthor.name;
         }
+
         const commentContent = await Promise.all(
           allPosts
             .filter((p) => p.replyTo === postId)
@@ -165,7 +186,7 @@ export const useTweets = (user) => {
                   : false,
                 likeCount: comment.likes.length,
                 commentCount: comment.commentCount || 0,
-                isComment: true, 
+                isComment: true,
               };
             })
         );
@@ -182,12 +203,13 @@ export const useTweets = (user) => {
           commentCount: commentContent.length,
         });
 
-        setLikes([
-          {
-            liked: post.likes.includes(currentLoginUser._id),
-            count: post.likes.length,
-          },
-        ]);
+        const allItems = [post, ...commentContent];
+        setLikes(
+          allItems.map((item) => ({
+            liked: item.likes.includes(currentLoginUser._id),
+            count: item.likes.length,
+          }))
+        );
       } catch (error) {
         console.log(error);
       }
@@ -216,13 +238,19 @@ export const useTweets = (user) => {
   const deletePost = async (id) => {
     try {
       const post = await getTweetById(API_URL, id);
-      const parentPost = await getTweetById(API_URL, post.replyTo);
       const deletedTweet = await deleteTweet(API_URL, id);
-      if (deletedTweet) {
+
+      if (deletedTweet && post.replyTo) {
+        const parentPost = await getTweetById(API_URL, post.replyTo);
         await updateTweet(API_URL, parentPost._id, {
           content: parentPost.content,
-          commentCount: parentPost.commentCount - 1,
+          commentCount: Math.max(0, parentPost.commentCount - 1),
         });
+      }
+
+      if (selectedPost) {
+        await handleViewPost(true, selectedPost._id);
+      } else {
         await fetchPosts();
       }
     } catch (error) {
