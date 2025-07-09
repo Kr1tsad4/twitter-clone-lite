@@ -38,7 +38,6 @@ function ListPost({
   const handlePostClick = (postId) => {
     if (!selectedPost) {
       handleViewPost(true, postId);
-      console.log(selectedPost);
     }
   };
   return (
