@@ -29,18 +29,20 @@ function ListPost({
   };
 
   const postToList = useMemo(() => {
-    return selectedPost ? [selectedPost] : posts;
+    if (selectedPost) {
+      return [selectedPost, ...(selectedPost.comments || [])];
+    }
+    return posts;
   }, [selectedPost, posts]);
 
   const handlePostClick = (postId) => {
-    console.log("click");
     if (!selectedPost) {
       handleViewPost(true, postId);
+      console.log(selectedPost);
     }
   };
-
   return (
-    <div className="mb-20">
+    <div>
       {postToList.map((post, index) => (
         <div
           key={post._id || index}
@@ -157,6 +159,8 @@ function ListPost({
           </div>
         </div>
       ))}
+
+      <div className="mb-96"></div>
     </div>
   );
 }

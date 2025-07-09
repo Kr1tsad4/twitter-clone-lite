@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import NavigationMenu from "../components/NavigationMenu";
-import MainPost from "../components/MainPost";
-import RightSideMenu from "../components/RightSideMenu";
+import NavigationMenu from "../components/Home/NavigationMenu";
+import MainPost from "../components/Home/MainPost";
+import RightSideMenu from "../components//Home/RightSideMenu";
 import { useTweets } from "../hooks/useTweets";
 import { useNavigate } from "react-router-dom";
 
 function HomePage() {
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(null)  ; 
   const navigator = useNavigate();
 
   const tweetProps = useTweets(user);

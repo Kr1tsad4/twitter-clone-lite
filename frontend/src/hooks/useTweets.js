@@ -44,11 +44,13 @@ export const useTweets = (user) => {
           if (tweet.replyTo) {
             try {
               const replyToPost = await getTweetById(API_URL, tweet.replyTo);
-              const replyToAuthor = await getUserById(
-                API_URL,
-                replyToPost.authorId
-              );
-              replyToAuthorName = replyToAuthor.name;
+              if (replyToPost.authorId) {
+                const replyToAuthor = await getUserById(
+                  API_URL,
+                  replyToPost.authorId
+                );
+                replyToAuthorName = replyToAuthor.name;
+              }
             } catch (error) {
               console.log(error);
             }
@@ -136,10 +138,11 @@ export const useTweets = (user) => {
 
     if (isView && postId) {
       try {
+        const allPosts = await getTweet(API_URL);
         const post = await getTweetById(API_URL, postId);
         const currentLoginUser = JSON.parse(sessionStorage.getItem("user"));
         const author = await getUserById(API_URL, post.authorId);
-        console.log("55");
+
         let replyToAuthorName = null;
         if (post.replyTo) {
           const replyToPost = await getTweetById(API_URL, post.replyTo);
@@ -149,6 +152,23 @@ export const useTweets = (user) => {
           );
           replyToAuthorName = replyToAuthor.name;
         }
+        const commentContent = await Promise.all(
+          allPosts
+            .filter((p) => p.replyTo === postId)
+            .map(async (comment) => {
+              const author = await getUserById(API_URL, comment.authorId);
+              return {
+                ...comment,
+                authorName: author.name,
+                likedByCurrentLoginUser: currentLoginUser
+                  ? comment.likes.includes(currentLoginUser._id)
+                  : false,
+                likeCount: comment.likes.length,
+                commentCount: comment.commentCount || 0,
+                isComment: true, 
+              };
+            })
+        );
 
         setSelectedPost({
           ...post,
@@ -157,8 +177,9 @@ export const useTweets = (user) => {
             ? post.likes.includes(currentLoginUser._id)
             : false,
           likeCount: post.likes.length,
-          commentCount: post.comments ? post.comments.length : 0,
           replyToAuthorName,
+          comments: commentContent,
+          commentCount: commentContent.length,
         });
 
         setLikes([

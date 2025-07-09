@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import NavButton from "./NavButton";
+import NavButton from "../NavButton";
 import { GoHome } from "react-icons/go";
 import { HiMagnifyingGlass } from "react-icons/hi2";
 import { GoBell } from "react-icons/go";
 import { HiOutlineEnvelope } from "react-icons/hi2";
 import { FaRegUser } from "react-icons/fa";
 import { MdMoreHoriz } from "react-icons/md";
-import UserProfile from "./UserProfile";
+import UserProfile from "../UserProfile";
 
 function NavigationMenu({ user, logout }) {
   const [hide, setHide] = useState(false);
