@@ -19,7 +19,6 @@ export const useUsers = () => {
     } catch (error) {
       console.log(error);
     }
-    console.log(randomUser);
   };
 
   return {

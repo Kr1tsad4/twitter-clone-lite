@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import RightSideBox from "./RightSideBox";
-import UserProfile from "./UserProfile";
-import TrendItem from "./TrendItem";
-import { useUsers } from "../hooks/useUsers"; 
+import RightSideBox from "../RightSideBox";
+import UserProfile from "../UserProfile";
+import TrendItem from "../TrendItem";
+import { useUsers } from "../../hooks/useUsers"; 
 
 function RightSideMenu({ user }) {
   const { randomUser, getAllUser } = useUsers();

@@ -1,10 +1,10 @@
-import ListPost from "./ListPost";
-import PostForm from "./PostForm";
-import PostPopup from "./PostPopup";
-import PostDetails from "./PostDetails";
+import ListPost from "../ListPost";
+import PostForm from "../PostForm";
+import PostPopup from "../PostPopup";
+import PostDetails from "../PostDetails";
 function MainPost({ user, ...tweetProps }) {
   return (
-    <div className="min-h-screen border-r-1 border-gray-700 w-[600px] text-white">
+    <div className="min-h-auto border-r-1 border-gray-700 w-[600px] text-white">
       {!tweetProps.isViewPost && (
         <>
           <div
